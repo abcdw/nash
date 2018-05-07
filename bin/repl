@@ -1,0 +1,4 @@
+#!/bin/bash
+clj -m repl 9000 $* &
+sleep 10
+emacsclient -e '(cider-connect "localhost" "'${1:-9000}'" "'`pwd`'")'
