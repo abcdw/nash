@@ -20,7 +20,18 @@
 (defn runfn [k]
   ((get-in @db [:nash/functions k])))
 
-(defshell :shell/ranger "alacritty" "-e" "ranger")
+(defshell :shell/ranger
+  "alacritty" "-e" "ranger")
+
+(defshell :windowmanager/detach-hdmi
+  "xrandr" "--output" "HDMI1" "--off")
+
+(defshell :windowmanager/attach-hdmi
+  "xrandr" "--output" "HDMI1" "--primary"
+  "--mode" "1920x1200" "--right-of" "eDP1")
+
+(runfn :windowmanager/detach-hdmi)
+(runfn :windowmanager/attach-hdmi)
 
 (runfn :shell/ranger)
 
