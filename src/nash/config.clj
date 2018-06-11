@@ -9,6 +9,7 @@
 
 ;; KEYBINDINGS
 ;; t for top-level, n for nested
+;; Hold modkey to reduce number of items in which-key
 
 ;; colorschemes
 ;; TODO: create converter from vim/emacs/terminal colorschemes
@@ -42,7 +43,9 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
    [:alt :space :caps :f1 :f2 :f3 :f4 :f5 :f6 :f7 :f8 :f9 :f10 :num] (range 56 69)})
 
 (def _keyword->keycode
-  {:printscreen 3639
+  {:f11         87
+   :f12         88
+   :printscreen 3639
    :home        3655
    :end         3663
    :pageup      3657
@@ -99,31 +102,27 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
 (def key-event-stream (get-in nhook [:nash.plugin/streams :jnativehook/key-events]))
 
 (def key-down (atom #{}))
-(def p-stream (stream/stream))
-(stream/consume #(swap! key-down conj %) p-stream)
-(def r-stream (stream/stream))
-(stream/consume #(swap! key-down disj %) r-stream)
+(def e-stream (stream/stream))
+
+(defn update-keydown [e]
+  (println e)
+  (cond
+    (= :pressed (:type e)) (swap! key-down conj (:keycode e))
+    (= :released (:type e)) (swap! key-down disj (:keycode e))))
+
+(def after-update (stream/map update-keydown e-stream))
 
 (stream/connect
- (bus/subscribe key-event-stream "pressed")
- p-stream)
+ (bus/subscribe key-event-stream "keyevents")
+ e-stream)
 
-(stream/connect
- (bus/subscribe key-event-stream "released")
- r-stream)
+(stream/consume (fn [x] (println @key-down (map keycode->keyword @key-down))) after-update)
 
-(def prn-stream (stream/stream))
-
-(stream/consume (fn [x] (println @key-down (map keycode->keyword @key-down))) prn-stream)
 
 (stream/consume (fn [x] (if (= #{3675 24} @key-down)
-                         (future (runfn :shell/mpc-toggle)))) prn-stream)
-;; (stream/close! prn-stream)
+                         (future (runfn :shell/mpc-toggle)))) after-update)
 
-(stream/connect
- (bus/subscribe key-event-stream "pressed")
- prn-stream)
-
+;; (stream/close! e-stream)
 
 (defshell :shell/ranger
   "alacritty" "-e" "ranger")

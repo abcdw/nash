@@ -15,9 +15,11 @@
         klistener
         (reify NativeKeyListener
           (nativeKeyPressed [this e]
-            (bus/publish! key-event-stream "pressed" (.getKeyCode e)))
+            (bus/publish! key-event-stream "keyevents" {:type    :pressed
+                                                       :keycode (.getKeyCode e)}))
           (nativeKeyReleased [this e]
-            (bus/publish! key-event-stream "released" (.getKeyCode e)))
+            (bus/publish! key-event-stream "keyevents" {:type    :released
+                                                       :keycode (.getKeyCode e)}))
           (nativeKeyTyped [this e]))
 
         jn-logger
@@ -28,7 +30,7 @@
       (GlobalScreen/addNativeKeyListener klistener)
       (catch NativeHookException e
         (println (.getMessage e))))
-    {:nash.plugin/deinit (fn [] (future (GlobalScreen/unregisterNativeHook)))
+    {:nash.plugin/deinit  (fn [] (future (GlobalScreen/unregisterNativeHook)))
      :nash.plugin/streams {:jnativehook/key-events key-event-stream}}))
 
 (comment
@@ -53,7 +55,7 @@
          (map (fn [name] [(convert-key-to-keyword name) (get-static-field-value name)]))
          (sort-by second)))
 
-  (def key->code (into {} key+code))
+  (def key->code (into {} key+code)))
 
-  )
+;; (map println key+code)
 
