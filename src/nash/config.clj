@@ -19,6 +19,38 @@
 ;; docstring formatting rule: use `x` to hilight var/fn and make a link
 ;; see also vim style of documentation
 
+;; two modes:
+;; meta a m for mpc transient
+;; meta f m for mpc oneshot command
+
+;; Conflict free hotkeys
+
+;; navigation in insert mode same as in normal, but with modifier (ctrl for example)
+;; Tap win to show which-key, hold win to show hotkey+action icon/window name
+
+;; Shorter than `spc w m` series hotkey (tab for example)
+;; Windows layout, which describes which windows placed in which containers
+
+;; Fastcall: save series of hotkey to one of few fastcolls (C-1/2/3/4/a/b/c)
+
+;; Global mode set until other mode chosen
+;; Window mode set after exiting from global mode
+;; Minor mode ???
+
+;; Get list of functions based on object "type" git fns for git-url for example
+
+;; How to understand what have to be called on SPC f f ? Last file-browser fn?
+
+;; TODO: Only one field can be edited other things are related only to navigation
+
+;; Description of the form -> transformer from formdata to storage data
+
+;; Show items on the same level grouped-by hight-level key, also come throught
+;; navigation for sexps (can go in different high-level sexp on the same nesting
+;; level)
+
+;; One-hand key bindings
+
 "This function shows a good doc string.
 
 It accepts a `name` as an argument and returns a pretty-printed doc.
