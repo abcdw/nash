@@ -1,14 +1,30 @@
 {:paths ["src"]
- :deps  {org.clojure/clojure     {:mvn/version "1.9.0"}
-         cider/cider-nrepl       {:mvn/version "0.18.0-SNAPSHOT"}
-         refactor-nrepl          {:mvn/version "2.4.0-SNAPSHOT"}
-         org.clojure/tools.nrepl {:mvn/version "0.2.13"}
-         org.clojure/test.check  {:mvn/version "0.9.0"}
-         spyscope                {:mvn/version "0.1.6"}
-         fipp                    {:mvn/version "0.6.12"}
+ :deps  {org.clojure/clojure {:mvn/version "1.9.0"}
+         spyscope            {:mvn/version "0.1.6"}
+         fipp                {:mvn/version "0.6.12"}
 
-         seesaw                  {:mvn/version "1.4.5"}
+         seesaw {:mvn/version "1.4.5"}
          ;; io.aviso/pretty         {:mvn/version "0.1.34"}}
 
          com.1stleg/jnativehook {:mvn/version "2.1.0"}
-         manifold {:mvn/version "0.1.7-alpha6"}}}
+         manifold               {:mvn/version "0.1.7-alpha6"}
+         org.clojure/spec.alpha {:mvn/version "0.1.143"}
+         org.clojure/test.check {:mvn/version "0.10.0-alpha3"}}
+
+ :aliases
+ {:nrepl
+  {:extra-deps
+   {org.clojure/tools.nrepl       {:mvn/version "0.2.13"}
+    cider/cider-nrepl             {:mvn/version "0.18.0-SNAPSHOT"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "2.4.0-SNAPSHOT"}}
+   :main-opts
+   ["-e" "(require,'cider-nrepl.main)(cider-nrepl.main/init,[\"refactor-nrepl.middleware/wrap-refactor\",\"cider.nrepl/cider-middleware\"])"]}
+
+  :test {:extra-paths ["test"]}
+
+  :runner
+  {:extra-deps
+   {com.cognitect/test-runner
+    {:git/url "https://github.com/cognitect-labs/test-runner"
+     :sha     "78d380d00e7a27f7b835bb90af37e73b20c49bcc"}}
+   :main-opts ["-m" "cognitect.test-runner" "-d" "test"]}}}
