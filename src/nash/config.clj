@@ -59,8 +59,27 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
 ;; https://github.com/eggsyntax/datawalk
 ;; https://github.com/mooz/xkeysnail
 
-(char-escape-string \t)
+{:key \p
+ :modifiers #{:ctrl :shift}}
+
+(def modifiers
+  #{:ctrl :shift :rshift :alt :caps})
+;; TODO: Define modifiers area of responsibility
+;; :ctrl for autocomplete
+;; :meta for windows
+
 (def nip #(println "not implemented"))
+
+
+(def modi->str
+  {:ctrl "C"
+   :alt  "A"
+   :meta "M"})
+
+(defn keyset-to-str [s k]
+  (str (if (s :ctrl) "C-") k))
+
+(keyset-to-str #{:ctrl :alt} \a)
 
 (def default-mapping
   {"C-u" ::to-previous-hotkey-list
@@ -110,7 +129,13 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
   {::cwd "/home/abcdw"
    ::current-window {:class "Emacs"}
 
+   ::state
+   {}
+
    ::functions
+   {}
+
+   ::effect-handlers
    {:shell/ranger nip}
 
    ::components
@@ -121,14 +146,17 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
 
 (def db (atom default-db))
 
+(defn init-db []
+  (reset! db default-db))
+
 (defn defshell [k & more]
   (println more)
-  (swap! db assoc-in [::functions k]
+  (swap! db assoc-in [::effect-handlers k]
          #(apply shell/sh more ;; :dir (:shell/cwd db)
                  )))
 
-(defn runfn [k]
-  ((get-in @db [::functions k])))
+(defn runef [k]
+  ((get-in @db [::effect-handlers k] (fn []))))
 
 (def nhook (nash.nativehook/init))
 (def key-event-stream (get-in nhook [:nash.plugin/streams :jnativehook/key-events]))
@@ -137,10 +165,10 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
 (def e-stream (stream/stream))
 
 (defn update-keydown [e]
-  (println e)
   (cond
     (= :pressed (:type e)) (swap! key-down conj (:keycode e))
-    (= :released (:type e)) (swap! key-down disj (:keycode e))))
+    (= :released (:type e)) (swap! key-down disj (:keycode e)))
+  e)
 
 (def after-update (stream/map update-keydown e-stream))
 
@@ -148,11 +176,20 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
  (bus/subscribe key-event-stream "keyevents")
  e-stream)
 
-(stream/consume (fn [x] (println @key-down (map keycode->keyword @key-down))) after-update)
+(stream/consume
+ (fn [x] (if (= :pressed (:type x)) (println @key-down (map keycode->keyword @key-down))))
+ after-update)
 
+(defn to-ef [key-down k]
+  (cond
+    (clojure.set/superset? key-down #{3675 24}) :shell/mpc-toggle))
+
+(runef (to-ef ;; @key-down x
+        #{3675 24} 24
+        ))
 
 (stream/consume (fn [x] (if (= #{3675 24} @key-down)
-                         (future (runfn :shell/mpc-toggle)))) after-update)
+                         (future (runef :shell/mpc-toggle)))) after-update)
 
 ;; (stream/close! e-stream)
 
@@ -169,8 +206,4 @@ It accepts a `name` as an argument and returns a pretty-printed doc.
   "xrandr" "--output" "HDMI1" "--primary"
   "--mode" "1920x1200" "--right-of" "eDP1")
 
-;; (runfn :windowmanager/detach-hdmi)
-;; (runfn :windowmanager/attach-hdmi)
-
-;; (runfn :shell/ranger)
-
+;; TODO: add cwd to i3status
