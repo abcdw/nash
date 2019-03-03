@@ -1,7 +1,17 @@
 Definitely not a shell
 
+## Disclaimer
+
+Just my experiments, ideas and some links
+
+Will document if get anything interesting here
 
 ## Ideas
+
+### structured data editor
+
+
+Main targets: yaml/edn/markdown/json
 
 ### Modes
 
